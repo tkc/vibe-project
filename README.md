@@ -11,7 +11,7 @@ GitHub Project V2 からタスクを取得し、Claude Code で実行して結�
 │                      GitHub Project V2                          │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │ Task: ユーザー認証APIの実装                              │   │
-│  │ Status: Todo → InProgress → Done                        │   │
+│  │ Status: Ready → InProgress → InReview                    │   │
 │  │ Prompt: JWTを使った認証エンドポイントを実装して          │   │
 │  │ WorkDir: /path/to/my-api                                 │   │
 │  └─────────────────────────────────────────────────────────┘   │
@@ -19,7 +19,7 @@ GitHub Project V2 からタスクを取得し、Claude Code で実行して結�
                               │
                               ▼
                      ┌─────────────────┐
-                     │  vive run       │  ← Claude Code 実行
+                     │  vibe run       │  ← Claude Code 実行
                      └─────────────────┘
                               │
                               ▼
@@ -29,7 +29,7 @@ GitHub Project V2 からタスクを取得し、Claude Code で実行して結�
 ## インストール
 
 ```bash
-go install github.com/tkc/vibe-project/cmd/vive@latest
+go install github.com/tkc/vibe-project/cmd/vibe@latest
 ```
 
 または
@@ -44,105 +44,109 @@ make build
 
 - Go 1.21+
 - [Claude Code](https://claude.ai/code) がインストール済み
-- GitHub Personal Access Token（`project` スコープ）
+- GitHub Personal Access Token（`project`, `repo` スコープ）
 
 ## セットアップ
 
 ### 1. GitHub 認証
 
 ```bash
-vive auth login
+vibe auth login
 ```
 
 必要なスコープ:
+
 - `project` (read/write)
 - `read:org` (組織プロジェクトの場合)
+- `repo` (Issue へのコメントに必要)
 
 ### 2. プロジェクト選択
 
 ```bash
 # プロジェクト一覧を表示
-vive project list <owner>
+vibe project list <owner>
 
 # プロジェクトを選択
-vive project select <owner> <project-number>
+vibe project select <owner> <project-number>
 ```
 
 ### 3. GitHub Project のカスタムフィールド設定
 
 以下のフィールドを Project に追加してください:
 
-| フィールド名 | 型 | 説明 |
-|-------------|-----|------|
-| Status | Single Select | `Todo`, `InProgress`, `Done`, `Failed` |
-| Prompt | Text | Claude Code に渡すプロンプト |
-| WorkDir | Text | 作業ディレクトリの絶対パス |
-| Result | Text | 実行結果サマリー（自動更新） |
-| SessionID | Text | セッションID（自動更新） |
-| ExecutedAt | Date | 実行日時（自動更新） |
+| フィールド名 | 型            | 説明                                |
+| ------------ | ------------- | ----------------------------------- |
+| Status       | Single Select | `Ready`, `In progress`, `In review` |
+| Result       | Text          | 実行結果サマリー（自動更新）        |
+| SessionID    | Text          | セッション ID（自動更新）           |
+| ExecutedAt   | Date          | 実行日時（自動更新）                |
+
+**プロンプトについて:**
+プロンプトは GitHub Project のフィールドではなく、**Issue の本文とコメント**から自動的に読み込まれます。
+タスク実行時に、関連する Issue の全てのコメントが結合されて Claude Code に渡されます。
 
 ## 使い方
 
 ### タスク一覧
 
 ```bash
-vive task list
-vive task list --status Todo
+vibe task list
+vibe task list --status Ready
 ```
 
 ### タスク詳細
 
 ```bash
-vive task show <task-id>
+vibe task show <task-id>
 ```
 
 ### タスク実行
 
 ```bash
 # 単一タスク実行
-vive run <task-id>
+vibe run <task-id>
 
 # ドライラン（実行せず確認のみ）
-vive run <task-id> --dry-run
+vibe run <task-id> --dry-run
 
-# 全 Todo タスクを実行
-vive run --all
+# 全 Ready タスクを実行
+vibe run --all
 
 # セッション継続
-vive run <task-id> --resume <session-id>
+vibe run <task-id> --resume <session-id>
 ```
 
 ### 監視モード
 
 ```bash
-# Todo タスクを監視して自動実行
-vive watch
+# Ready タスクを監視して自動実行
+vibe watch
 
 # 1分間隔で監視
-vive watch --interval 1m
+vibe watch --interval 1m
 ```
 
 ## コマンド一覧
 
 ```
-vive auth login      # GitHub 認証
-vive auth status     # 認証状態確認
-vive auth logout     # ログアウト
+vibe auth login      # GitHub 認証
+vibe auth status     # 認証状態確認
+vibe auth logout     # ログアウト
 
-vive project list    # プロジェクト一覧
-vive project select  # プロジェクト選択
-vive project show    # 現在のプロジェクト表示
+vibe project list    # プロジェクト一覧
+vibe project select  # プロジェクト選択
+vibe project show    # 現在のプロジェクト表示
 
-vive task list       # タスク一覧
-vive task show       # タスク詳細
+vibe task list       # タスク一覧
+vibe task show       # タスク詳細
 
-vive run             # タスク実行
-vive watch           # 監視モード
+vibe run             # タスク実行
+vibe watch           # 監視モード
 ```
 
 ## 設定ファイル
 
-設定は `~/.vive/config.json` に保存されます:
+設定は `~/.vibe/config.json` に保存されます:
 
 ```json
 {

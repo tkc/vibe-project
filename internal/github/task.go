@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/shurcooL/githubv4"
@@ -13,7 +14,6 @@ import (
 const (
 	FieldStatus     = "Status"
 	FieldPrompt     = "Prompt"
-	FieldWorkDir    = "WorkDir"
 	FieldResult     = "Result"
 	FieldSessionID  = "SessionID"
 	FieldExecutedAt = "ExecutedAt"
@@ -122,17 +122,31 @@ func (s *TaskService) GetTasks(ctx context.Context, filter *domain.TaskFilter) (
 						}
 						FieldValues struct {
 							Nodes []struct {
-								TypeName     string                `graphql:"__typename"`
-								TextField    struct{ Text string } `graphql:"... on ProjectV2ItemFieldTextValue"`
+								TypeName  string `graphql:"__typename"`
+								TextField struct {
+									Text  string
+									Field struct {
+										FieldCommon struct {
+											Name string
+										} `graphql:"... on ProjectV2FieldCommon"`
+									} `graphql:"field"`
+								} `graphql:"... on ProjectV2ItemFieldTextValue"`
 								SingleSelect struct {
-									Name string
+									Name  string
+									Field struct {
+										FieldCommon struct {
+											Name string
+										} `graphql:"... on ProjectV2FieldCommon"`
+									} `graphql:"field"`
 								} `graphql:"... on ProjectV2ItemFieldSingleSelectValue"`
-								DateField struct{ Date string } `graphql:"... on ProjectV2ItemFieldDateValue"`
-								Field     struct {
-									FieldCommon struct {
-										Name string
-									} `graphql:"... on ProjectV2FieldCommon"`
-								} `graphql:"field"`
+								DateField struct {
+									Date  string
+									Field struct {
+										FieldCommon struct {
+											Name string
+										} `graphql:"... on ProjectV2FieldCommon"`
+									} `graphql:"field"`
+								} `graphql:"... on ProjectV2ItemFieldDateValue"`
 							}
 						} `graphql:"fieldValues(first: 20)"`
 					}
@@ -165,14 +179,21 @@ func (s *TaskService) GetTasks(ctx context.Context, filter *domain.TaskFilter) (
 
 		// フィールド値を取得
 		for _, fv := range item.FieldValues.Nodes {
-			fieldName := fv.Field.FieldCommon.Name
+			var fieldName string
+			switch fv.TypeName {
+			case "ProjectV2ItemFieldTextValue":
+				fieldName = fv.TextField.Field.FieldCommon.Name
+			case "ProjectV2ItemFieldSingleSelectValue":
+				fieldName = fv.SingleSelect.Field.FieldCommon.Name
+			case "ProjectV2ItemFieldDateValue":
+				fieldName = fv.DateField.Field.FieldCommon.Name
+			}
+
 			switch fieldName {
 			case FieldStatus:
 				task.Status = domain.Status(fv.SingleSelect.Name)
 			case FieldPrompt:
 				task.Prompt = fv.TextField.Text
-			case FieldWorkDir:
-				task.WorkDir = fv.TextField.Text
 			case FieldResult:
 				task.Result = fv.TextField.Text
 			case FieldSessionID:
@@ -256,7 +277,7 @@ func (s *TaskService) updateTextField(ctx context.Context, itemID, fieldName, va
 		UpdateProjectV2ItemFieldValue struct {
 			ProjectV2Item struct {
 				ID string
-			}
+			} `graphql:"projectV2Item"`
 		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
 	}
 
@@ -294,7 +315,7 @@ func (s *TaskService) updateSingleSelectField(ctx context.Context, itemID, field
 		UpdateProjectV2ItemFieldValue struct {
 			ProjectV2Item struct {
 				ID string
-			}
+			} `graphql:"projectV2Item"`
 		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
 	}
 
@@ -320,7 +341,7 @@ func (s *TaskService) updateDateField(ctx context.Context, itemID, fieldName str
 		UpdateProjectV2ItemFieldValue struct {
 			ProjectV2Item struct {
 				ID string
-			}
+			} `graphql:"projectV2Item"`
 		} `graphql:"updateProjectV2ItemFieldValue(input: $input)"`
 	}
 
@@ -337,4 +358,50 @@ func (s *TaskService) updateDateField(ctx context.Context, itemID, fieldName str
 	_ = dateStr // suppress unused variable warning
 
 	return s.client.gql.Mutate(ctx, &mutation, input, nil)
+}
+
+// AddIssueComment はタスクに紐づくIssueにコメントを追加する
+func (s *TaskService) AddIssueComment(ctx context.Context, task *domain.Task, body string) error {
+	if task.IssueURL == "" {
+		return fmt.Errorf("task has no associated issue")
+	}
+	return s.client.AddIssueComment(ctx, task.IssueURL, body)
+}
+
+// GetFirstReadyTask はReadyステータスの最初のタスクを取得する
+func (s *TaskService) GetFirstReadyTask(ctx context.Context) (*domain.Task, error) {
+	status := domain.StatusReady
+	filter := &domain.TaskFilter{Status: &status}
+	tasks, err := s.GetTasks(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range tasks {
+		if t.IsExecutable() {
+			return t, nil
+		}
+	}
+
+	return nil, nil // 実行可能なタスクがない
+}
+
+// LoadTaskPrompt はIssueのコメントからプロンプトを読み込む
+func (s *TaskService) LoadTaskPrompt(ctx context.Context, task *domain.Task) error {
+	if task.IssueURL == "" {
+		return fmt.Errorf("task has no associated issue")
+	}
+
+	comments, err := s.client.GetIssueComments(ctx, task.IssueURL)
+	if err != nil {
+		return fmt.Errorf("failed to get issue comments: %w", err)
+	}
+
+	if len(comments) == 0 {
+		return fmt.Errorf("no comments found in issue")
+	}
+
+	// 全コメントを改行で結合してプロンプトとする
+	task.Prompt = strings.Join(comments, "\n\n---\n\n")
+	return nil
 }

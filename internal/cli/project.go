@@ -20,7 +20,7 @@ var projectListCmd = &cobra.Command{
 	Args:  cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if cfg.GitHubToken == "" {
-			return fmt.Errorf("not logged in. Run: vive auth login")
+			return fmt.Errorf("not logged in. Run: vibe auth login")
 		}
 
 		var owner string
@@ -29,7 +29,7 @@ var projectListCmd = &cobra.Command{
 		} else if cfg.ProjectOwner != "" {
 			owner = cfg.ProjectOwner
 		} else {
-			return fmt.Errorf("owner is required. Usage: vive project list <owner>")
+			return fmt.Errorf("owner is required. Usage: vibe project list <owner>")
 		}
 		client := github.NewClient(cfg.GitHubToken, owner)
 
@@ -51,7 +51,7 @@ var projectListCmd = &cobra.Command{
 		}
 
 		fmt.Println("To select a project, run:")
-		fmt.Printf("  vive project select %s <number>\n", owner)
+		fmt.Printf("  vibe project select %s <number>\n", owner)
 		return nil
 	},
 }
@@ -89,7 +89,7 @@ var projectSelectCmd = &cobra.Command{
 		fmt.Printf("✓ Selected project: %s (#%d)\n", project.Title, project.Number)
 		fmt.Printf("  URL: %s\n", project.URL)
 		fmt.Println()
-		fmt.Println("Next step: vive task list")
+		fmt.Println("Next step: vibe task list")
 		return nil
 	},
 }

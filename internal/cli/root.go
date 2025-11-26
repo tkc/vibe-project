@@ -15,9 +15,9 @@ var (
 
 // rootCmd はルートコマンド
 var rootCmd = &cobra.Command{
-	Use:   "vive",
+	Use:   "vibe",
 	Short: "GitHub Project + Claude Code automation CLI",
-	Long: `vive is a CLI tool that integrates GitHub Projects with Claude Code.
+	Long: `vibe is a CLI tool that integrates GitHub Projects with Claude Code.
 
 It fetches tasks from GitHub Projects, executes them using Claude Code,
 and updates the results back to the project.`,

@@ -6,10 +6,9 @@ import "time"
 type Status string
 
 const (
-	StatusTodo       Status = "Todo"
-	StatusInProgress Status = "InProgress"
-	StatusDone       Status = "Done"
-	StatusFailed     Status = "Failed"
+	StatusReady      Status = "Ready"
+	StatusInProgress Status = "In progress"
+	StatusInReview   Status = "In review"
 )
 
 // Task はGitHub Projectのタスクを表す
@@ -27,7 +26,8 @@ type Task struct {
 
 // IsExecutable はタスクが実行可能かどうかを返す
 func (t *Task) IsExecutable() bool {
-	return t.Status == StatusTodo && t.Prompt != "" && t.WorkDir != ""
+	// Promptは実行時にIssueから読み込むため、IssueURLの有無で判定
+	return t.Status == StatusReady && t.IssueURL != ""
 }
 
 // TaskFilter はタスクのフィルタ条件

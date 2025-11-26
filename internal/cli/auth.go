@@ -23,6 +23,7 @@ For Classic tokens (https://github.com/settings/tokens):
   Required scopes:
     - project (Full control of projects)
     - read:org (for organization projects)
+    - repo (Required for commenting on issues)
 
 For Fine-grained tokens (https://github.com/settings/tokens?type=beta):
   Account permissions:
@@ -31,7 +32,7 @@ For Fine-grained tokens (https://github.com/settings/tokens?type=beta):
 Create a token at: https://github.com/settings/tokens`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("GitHub Personal Access Token を入力してください")
-		fmt.Println("(必要なスコープ: project, read:org)")
+		fmt.Println("(必要なスコープ: project, read:org, repo)")
 		fmt.Println()
 		fmt.Print("Token: ")
 
@@ -53,7 +54,7 @@ Create a token at: https://github.com/settings/tokens`,
 
 		fmt.Println("✓ Token saved successfully")
 		fmt.Println()
-		fmt.Println("Next step: vive project select")
+		fmt.Println("Next step: vibe project select")
 		return nil
 	},
 }
@@ -65,7 +66,7 @@ var authStatusCmd = &cobra.Command{
 		if cfg.GitHubToken == "" {
 			fmt.Println("✗ Not logged in")
 			fmt.Println()
-			fmt.Println("Run: vive auth login")
+			fmt.Println("Run: vibe auth login")
 			return nil
 		}
 

@@ -139,20 +139,18 @@ func printTaskDetail(t *domain.Task) {
 	if t.IsExecutable() {
 		fmt.Println()
 		fmt.Println("This task is executable. Run:")
-		fmt.Printf("  vive run %s\n", t.ID)
+		fmt.Printf("  vibe run %s\n", t.ID)
 	}
 }
 
 func statusIcon(s domain.Status) string {
 	switch s {
-	case domain.StatusTodo:
+	case domain.StatusReady:
 		return "○"
 	case domain.StatusInProgress:
 		return "◐"
-	case domain.StatusDone:
+	case domain.StatusInReview:
 		return "●"
-	case domain.StatusFailed:
-		return "✗"
 	default:
 		return "?"
 	}
@@ -166,7 +164,7 @@ func truncate(s string, max int) string {
 }
 
 func init() {
-	taskListCmd.Flags().StringVarP(&taskStatusFilter, "status", "s", "", "Filter by status (Todo, InProgress, Done, Failed)")
+	taskListCmd.Flags().StringVarP(&taskStatusFilter, "status", "s", "", "Filter by status (Ready, InProgress, InReview)")
 
 	taskCmd.AddCommand(taskListCmd)
 	taskCmd.AddCommand(taskShowCmd)

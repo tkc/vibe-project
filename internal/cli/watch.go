@@ -21,9 +21,9 @@ var (
 var watchCmd = &cobra.Command{
 	Use:   "watch",
 	Short: "Watch for new tasks and execute them automatically",
-	Long: `Watch the GitHub Project for new Todo tasks and execute them automatically.
+	Long: `Watch the GitHub Project for new Ready tasks and execute them automatically.
 
-This command polls the project at regular intervals, picks up Todo tasks,
+This command polls the project at regular intervals, picks up Ready tasks,
 executes them one by one using Claude Code, and updates the results.
 
 Press Ctrl+C to stop watching.`,
@@ -79,7 +79,7 @@ Press Ctrl+C to stop watching.`,
 }
 
 func processNewTasks(ctx context.Context, taskSvc *github.TaskService, executor *claude.Executor) {
-	status := domain.StatusTodo
+	status := domain.StatusReady
 	filter := &domain.TaskFilter{Status: &status}
 
 	tasks, err := taskSvc.GetTasks(ctx, filter)

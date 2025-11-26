@@ -32,7 +32,8 @@ func (e *Execution) Summary() string {
 // NewStatus は実行結果に基づいて新しいStatusを返す
 func (e *Execution) NewStatus() Status {
 	if e.Success {
-		return StatusDone
+		return StatusInReview
 	}
-	return StatusFailed
+	// 失敗してもInReviewにして確認を促す
+	return StatusInReview
 }

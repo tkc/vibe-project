@@ -22,7 +22,7 @@ const DefaultClaudePath = "claude"
 const configFileName = "config.json"
 
 // configDir は設定ディレクトリ名
-const configDirName = ".vive"
+const configDirName = ".vibe"
 
 // Load は設定ファイルを読み込む
 func Load() (*Config, error) {
@@ -79,10 +79,10 @@ func (c *Config) Save() error {
 // Validate は設定が有効かどうかを検証する
 func (c *Config) Validate() error {
 	if c.GitHubToken == "" {
-		return fmt.Errorf("github_token is required. Run: vive auth login")
+		return fmt.Errorf("github_token is required. Run: vibe auth login")
 	}
 	if c.ProjectOwner == "" || c.ProjectNumber == 0 {
-		return fmt.Errorf("project is not configured. Run: vive project select")
+		return fmt.Errorf("project is not configured. Run: vibe project select")
 	}
 	return nil
 }
