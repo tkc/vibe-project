@@ -386,6 +386,26 @@ func (s *TaskService) GetFirstReadyTask(ctx context.Context) (*domain.Task, erro
 	return nil, nil // 実行可能なタスクがない
 }
 
+// VibeCommentMarker はvibeが追加したコメントを識別するマーカー
+const VibeCommentMarker = "<!-- vibe-project-comment -->"
+
+// isVibeComment はvibeが追加したコメントかどうかを判定する
+func isVibeComment(comment string) bool {
+	// 新形式: HTMLコメントマーカー
+	if strings.Contains(comment, VibeCommentMarker) {
+		return true
+	}
+	// 旧形式: "Executed by vibe-project" を含む
+	if strings.Contains(comment, "Executed by vibe-project") {
+		return true
+	}
+	// 旧形式: "vibe project comment" で始まる
+	if strings.HasPrefix(strings.TrimSpace(comment), "vibe project comment") {
+		return true
+	}
+	return false
+}
+
 // LoadTaskPrompt はIssueのコメントからプロンプトを読み込む
 func (s *TaskService) LoadTaskPrompt(ctx context.Context, task *domain.Task) error {
 	if task.IssueURL == "" {
@@ -401,8 +421,20 @@ func (s *TaskService) LoadTaskPrompt(ctx context.Context, task *domain.Task) err
 		return fmt.Errorf("no comments found in issue")
 	}
 
+	// vibeが追加したコメントを除外
+	var promptParts []string
+	for _, comment := range comments {
+		if !isVibeComment(comment) {
+			promptParts = append(promptParts, comment)
+		}
+	}
+
+	if len(promptParts) == 0 {
+		return fmt.Errorf("no user comments found in issue (only vibe comments)")
+	}
+
 	// 全コメントを改行で結合してプロンプトとする
-	task.Prompt = strings.Join(comments, "\n\n---\n\n")
+	task.Prompt = strings.Join(promptParts, "\n\n---\n\n")
 	return nil
 }
 
