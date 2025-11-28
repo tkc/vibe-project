@@ -10,6 +10,7 @@ import (
 	"github.com/tkc/vibe-project/internal/claude"
 	"github.com/tkc/vibe-project/internal/domain"
 	"github.com/tkc/vibe-project/internal/github"
+	"github.com/tkc/vibe-project/internal/notify"
 )
 
 var (
@@ -130,9 +131,13 @@ Examples:
 		fmt.Println()
 		if exec.Success {
 			fmt.Printf("✅ Completed (%.1fs)\n", exec.Duration.Seconds())
+			// macOS notification
+			_ = notify.SendSuccess(task.Title, exec.Duration.Seconds())
 		} else {
 			fmt.Printf("❌ Failed (%.1fs)\n", exec.Duration.Seconds())
 			fmt.Printf("   Error: %s\n", truncate(exec.Error, 100))
+			// macOS notification
+			_ = notify.SendFailure(task.Title, exec.Error)
 		}
 
 		// Projectのフィールドを更新

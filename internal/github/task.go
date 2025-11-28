@@ -405,3 +405,16 @@ func (s *TaskService) LoadTaskPrompt(ctx context.Context, task *domain.Task) err
 	task.Prompt = strings.Join(comments, "\n\n---\n\n")
 	return nil
 }
+
+// GetStatusOptions はStatusフィールドの選択肢一覧を返す
+func (s *TaskService) GetStatusOptions() []FieldOption {
+	if field, ok := s.fields[FieldStatus]; ok {
+		return field.Options
+	}
+	return nil
+}
+
+// GetFields は全フィールド情報を返す
+func (s *TaskService) GetFields() map[string]ProjectField {
+	return s.fields
+}

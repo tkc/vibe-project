@@ -23,7 +23,7 @@ It fetches tasks from GitHub Projects, executes them using Claude Code,
 and updates the results back to the project.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		var err error
-		cfg, err = config.Load()
+		cfg, err = config.LoadWithPrecedence()
 		if err != nil {
 			return fmt.Errorf("failed to load config: %w", err)
 		}
@@ -47,4 +47,5 @@ func init() {
 	rootCmd.AddCommand(taskCmd)
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(watchCmd)
+	rootCmd.AddCommand(statusCmd)
 }

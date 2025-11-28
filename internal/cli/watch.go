@@ -12,6 +12,7 @@ import (
 	"github.com/tkc/vibe-project/internal/claude"
 	"github.com/tkc/vibe-project/internal/domain"
 	"github.com/tkc/vibe-project/internal/github"
+	"github.com/tkc/vibe-project/internal/notify"
 )
 
 var (
@@ -129,8 +130,10 @@ func processNewTasks(ctx context.Context, taskSvc *github.TaskService, executor 
 
 		if exec.Success {
 			fmt.Printf("   ✅ Done (%.1fs)\n", exec.Duration.Seconds())
+			_ = notify.SendSuccess(task.Title, exec.Duration.Seconds())
 		} else {
 			fmt.Printf("   ❌ Failed: %s\n", truncate(exec.Error, 100))
+			_ = notify.SendFailure(task.Title, exec.Error)
 		}
 	}
 	fmt.Println()

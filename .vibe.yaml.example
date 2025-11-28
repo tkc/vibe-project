@@ -1,0 +1,23 @@
+# .vibe.yaml - プロジェクトローカル設定ファイル
+#
+# このファイルをプロジェクトルートに配置することで、
+# プロジェクトごとの設定を管理できます。
+
+# GitHub Project の設定
+project:
+  # GitHub Project の URL を指定 (推奨)
+  # ユーザープロジェクト: https://github.com/users/{owner}/projects/{number}
+  # 組織プロジェクト: https://github.com/orgs/{owner}/projects/{number}
+  url: https://github.com/users/tkc/projects/6
+
+  # 後方互換性: URL の代わりに owner と number を直接指定することも可能
+  # owner: tkc
+  # number: 6
+
+# オプション: Claude Code のパス
+# デフォルトは "claude" です
+# claude_path: /usr/local/bin/claude
+
+# 注意: GitHub トークンはセキュリティ上の理由から、
+# グローバル設定 (~/.vibe/config.json) に保存することを推奨します。
+# このファイルに github_token を含めないでください。
